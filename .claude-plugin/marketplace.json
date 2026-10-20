@@ -1,0 +1,6 @@
+{
+  "name": "claude-usage-band",
+  "owner": { "name": "nadelacruz-00" },
+  "metadata": { "description": "Claude Code plugin that shows plan usage limits under the text input" },
+  "plugins": [{ "name": "usage-band", "source": "./" }]
+}
