@@ -9,7 +9,7 @@ A Claude Code plugin that adds your context window fill and plan usage limits, a
 - `ctx`: how full the current conversation's context window is, as `/context` reports it.
 - `5h` and `wk`: the 5-hour session and weekly limits, as `/usage` reports them.
 - Updates live after each response. Claude Code's own hint line, including the auto mode indicator, is left as it is.
-- Shows nothing until the first response of a session gives a reading.
+- In a new conversation, `5h` and `wk` start from the last reading of any earlier session (they are account-wide) and `ctx` shows `–%` until the first response.
 
 ## Install
 

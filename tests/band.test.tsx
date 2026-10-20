@@ -39,7 +39,7 @@ test('the hint line ends with context and limit percentages', async ($, on) => {
   await ui.unmount()
 })
 
-test('before any reading the hint line is left as it is', async ($, on) => {
+test('before any reading it shows placeholders', async ($, on) => {
   // Stands for the engine: draws the hint line with whatever tail it was handed.
   on('ui.render', ($, e) => {
     const { Text } = $.ui.resolve(e)
@@ -48,6 +48,8 @@ test('before any reading the hint line is left as it is', async ($, on) => {
   })
 
   const ui = await $.ui.mount(HINT)
-  expect((await ui.find({ type: 'Text', text: /auto mode/ }))?.text).toBe(HINT.props.hint)
+  expect((await ui.find({ type: 'Text', text: /auto mode/ }))?.text).toBe(
+    '⏵⏵ auto mode on (shift+tab to cycle)  ctx –% · 5h –% · wk –%',
+  )
   await ui.unmount()
 })

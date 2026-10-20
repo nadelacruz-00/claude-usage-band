@@ -1,6 +1,6 @@
 {
   "name": "usage-band",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Context % and plan usage limits as small percentages on the hint line under the text input, updated live",
   "author": { "name": "nadelacruz-00" },
   "types": "./types/index.d.ts"
