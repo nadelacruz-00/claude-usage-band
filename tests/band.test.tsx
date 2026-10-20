@@ -1,8 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
-const NOW = Date.parse('2026-10-20T12:00:00Z')
-
-const BAND = {
+const HINT = {
   plugin: 'usage-band',
   component: 'PromptHint',
   surface: 'terminal',
@@ -13,13 +11,17 @@ const BAND = {
   },
 } as const
 
-test('the band shows context and each limit with its reset countdown', async ($, on) => {
+test('the hint line ends with context and limit percentages', async ($, on) => {
+  // Stands for the engine: draws the hint line with whatever tail it was handed.
+  on('ui.render', ($, e) => {
+    const { Text } = $.ui.resolve(e)
+    const props = e.props as { hint: string; tail?: string }
+    return <Text>{`${props.hint}${props.tail ?? ''}`}</Text>
+  })
   on('session.start', (_, e) => ({ cwd: e.cwd }))
-  on('clock.now', () => ({ value: NOW }))
-  on('clock.every', () => ({ value: undefined }))
   on('session.usage', () => ({
     value: {
-      startedAt: NOW,
+      startedAt: 0,
       context: { window: 200000, tokens: 68000, percent: 34 },
       rateLimits: [
         { kind: 'five_hour', percentUsed: 42, resetsAt: '2026-10-20T14:13:00Z' },
@@ -29,24 +31,23 @@ test('the band shows context and each limit with its reset countdown', async ($,
   }))
 
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
-  const ui = await $.ui.mount(BAND)
+  const ui = await $.ui.mount(HINT)
 
-  expect((await ui.find({ type: 'Text', text: /^Context$/ }))?.text).toBe('Context')
-  expect((await ui.find({ type: 'Text', text: /^34%$/ }))?.text).toBe('34%')
-  expect((await ui.find({ type: 'Text', text: /^Session$/ }))?.text).toBe('Session')
-  expect((await ui.find({ type: 'Text', text: /^42%$/ }))?.text).toBe('42%')
-  expect((await ui.find({ type: 'Text', text: /2h 13m/ }))?.text).toBe('resets in 2h 13m')
-  expect((await ui.find({ type: 'Text', text: /^92%$/ }))?.text).toBe('92%')
-  expect((await ui.find({ type: 'Text', text: /3d 4h/ }))?.text).toBe('resets in 3d 4h')
-  expect((await ui.find({ type: 'Text', text: /auto mode/ }))?.text).toBe(BAND.props.hint)
+  expect((await ui.find({ type: 'Text', text: /auto mode/ }))?.text).toBe(
+    '⏵⏵ auto mode on (shift+tab to cycle)  ctx 34% · 5h 42% · wk 92%',
+  )
   await ui.unmount()
 })
 
-test('before any reading the row says so and keeps the hint', async ($, on) => {
-  on('clock.now', () => ({ value: NOW }))
+test('before any reading the hint line is left as it is', async ($, on) => {
+  // Stands for the engine: draws the hint line with whatever tail it was handed.
+  on('ui.render', ($, e) => {
+    const { Text } = $.ui.resolve(e)
+    const props = e.props as { hint: string; tail?: string }
+    return <Text>{`${props.hint}${props.tail ?? ''}`}</Text>
+  })
 
-  const ui = await $.ui.mount(BAND)
-  expect((await ui.find({ type: 'Text', text: /no reading yet/ }))?.text).toMatch(/^Usage:/)
-  expect((await ui.find({ type: 'Text', text: /auto mode/ }))?.text).toBe(BAND.props.hint)
+  const ui = await $.ui.mount(HINT)
+  expect((await ui.find({ type: 'Text', text: /auto mode/ }))?.text).toBe(HINT.props.hint)
   await ui.unmount()
 })
