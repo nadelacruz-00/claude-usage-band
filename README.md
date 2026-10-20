@@ -1,15 +1,16 @@
 # usage-band
 
-A Claude Code plugin that keeps your plan usage limits on screen, in a row directly under the text input:
+A Claude Code plugin that keeps your context window fill and plan usage limits on screen, in a row directly under the text input:
 
 ```
-Session ████░░░░░░ 42% resets in 2h 13m   Week █████████░ 92% resets in 3d 4h
+Context ███░░░░░░░ 34%   Session ████░░░░░░ 42% resets in 2h 13m   Week █████████░ 92% resets in 3d 4h
 ⏵⏵ auto mode on (shift+tab to cycle)
 ```
 
 - Percentages update live as Claude Code receives new usage figures after each response; reset countdowns tick every 30 seconds.
 - Bars are green under 70%, yellow from 70%, red from 90%.
-- Shows the same session (5-hour) and weekly windows as `/usage`. Before the first response of a session it says "no reading yet".
+- Context is how full the current conversation's context window is, as `/context` reports it.
+- Session and Week are the same 5-hour and weekly windows as `/usage`. Before the first response of a session it says "no reading yet".
 
 The row replaces Claude Code's hint line and redraws that line's text, dim, beneath it, so the hint line's own colors are not kept.
 

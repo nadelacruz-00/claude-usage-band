@@ -5,6 +5,7 @@ import type { Limit } from '../types'
 
 const limits = atom({ plugin: 'usage-band', key: 'limits' } as const, [] as Limit[])
 const now = atom({ plugin: 'usage-band', key: 'now' } as const, 0)
+const context = atom({ plugin: 'usage-band', key: 'context' } as const, null as number | null)
 
 const LABELS: Record<string, string> = {
   five_hour: 'Session',
@@ -38,6 +39,7 @@ export const register: Register = on => {
     const usage = await $.session.usage()
     const ms = await $.clock.now()
     await update($, limits, () => usage.rateLimits)
+    await update($, context, () => usage.context.percent ?? null)
     await update($, now, () => ms)
     // Countdowns tick between API responses; percentages arrive via session.measure.
     $.clock.every(TICK_MS, () => {
@@ -50,6 +52,9 @@ export const register: Register = on => {
     if (e.changed.includes('rateLimits')) {
       await update($, limits, () => e.rateLimits)
     }
+    if (e.changed.includes('context')) {
+      await update($, context, () => e.context.percent ?? null)
+    }
     const ms = await $.clock.now()
     await update($, now, () => ms)
     return next(e)
@@ -60,19 +65,30 @@ export const register: Register = on => {
   on('ui.render', { component: 'PromptHint' }, async ($, e, next) => {
     const { Box, Text } = $.ui.resolve(e)
     const rows = await read($, limits)
+    const contextPercent = await read($, context)
     const nowMs = (await read($, now)) || (await $.clock.now())
 
+    const meters = [
+      ...(contextPercent === null ? [] : [{ key: 'context', label: 'Context', percent: contextPercent, note: '' }]),
+      ...rows.map(limit => ({
+        key: limit.kind,
+        label: LABELS[limit.kind] ?? limit.kind,
+        percent: limit.percentUsed,
+        note: untilReset(limit.resetsAt, nowMs),
+      })),
+    ]
+
     const usage =
-      rows.length === 0 ? (
+      meters.length === 0 ? (
         <Text dimColor>Usage: no reading yet, updates after the next response</Text>
       ) : (
         <Box flexDirection="row" flexWrap="wrap" columnGap={3}>
-          {rows.map(limit => (
-            <Box key={limit.kind} flexDirection="row" columnGap={1}>
-              <Text bold>{LABELS[limit.kind] ?? limit.kind}</Text>
-              <Text color={colorFor(limit.percentUsed)}>{bar(limit.percentUsed)}</Text>
-              <Text>{`${Math.round(limit.percentUsed)}%`}</Text>
-              <Text dimColor>{untilReset(limit.resetsAt, nowMs)}</Text>
+          {meters.map(meter => (
+            <Box key={meter.key} flexDirection="row" columnGap={1}>
+              <Text bold>{meter.label}</Text>
+              <Text color={colorFor(meter.percent)}>{bar(meter.percent)}</Text>
+              <Text>{`${Math.round(meter.percent)}%`}</Text>
+              {meter.note ? <Text dimColor>{meter.note}</Text> : null}
             </Box>
           ))}
         </Box>

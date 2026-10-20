@@ -1,7 +1,7 @@
 {
   "name": "usage-band",
-  "version": "0.1.0",
-  "description": "Always-on row under the text input showing plan usage limits (session and weekly) with live updates",
+  "version": "0.2.0",
+  "description": "Always-on row under the text input showing context % and plan usage limits (session and weekly) with live updates",
   "author": { "name": "nadelacruz-00" },
   "types": "./types/index.d.ts"
 }
